@@ -28,15 +28,16 @@ CMD:additem(playerid, params[]) {
 	return 1;
 }
 CMD:inv(playerid, params[]) {
-	new slot[129];
+	new slot[120];
 	for(new i = 0;i< MAX_SLOT ; i++) {
 		if(SlotInventory[playerid][i] != 0)
 		{
 			format(slot, sizeof(slot), "%s\n%s\t%d/100", slot,GetItemName(SlotInventory[playerid][i]),AmmountItem[playerid][SlotInventory[playerid][i]]);
 		}
 	    else strcat(slot, "\nCon Trong");
-	    ShowPlayerDialog(playerid, DIALOG_INVENTORY, DIALOG_STYLE_LIST, "Tui do", slot, "Su dung", "Vut bo");
 	}
+	format(slot, sizeof slot, "%s\nThoat", slot);
+	ShowPlayerDialog(playerid, DIALOG_INVENTORY, DIALOG_STYLE_LIST, "Tui do", slot, "Su dung", "Vut bo");
 	return 1;
 }
 public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[]) {
@@ -44,14 +45,36 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[]) {
 		if(response) {
 			if(listitem < 9) {
 				if(SlotInventory[playerid][listitem] != 0) {
-						OnPlayerUseItem(playerid, SlotInventory[playerid][listitem] , listitem);
+					OnPlayerUseItem(playerid, SlotInventory[playerid][listitem] , listitem);
 				}
 				else {
 					SendClientMessage(playerid, -1, "[INVENTORY-BUG] Slot khong co gi.");
 				}
 			}
 		}
+		else if(!response) {
+			if(listitem < 9) {
+				if(SlotInventory[playerid][listitem] != 0) {
+					OnPlayerDropItem(playerid, SlotInventory[playerid][listitem] , listitem);
+				}
+				else {
+					SendClientMessage(playerid, -1, "[INVENTORY-BUG] Khong co gi de vut.");
+				}
+			}
+		}
 	}
+	return 1;
+}
+stock OnPlayerDropItem(playerid, itemid , slot) {
+	if(AmmountItem[playerid][itemid] > 1) {
+		AmmountItem[playerid][itemid] -= 1;
+		return 1;
+	}
+	else if(AmmountItem[playerid][itemid] <= 1) {
+		AmmountItem[playerid][itemid] = 0;
+		SlotInventory[playerid][slot] = 0;
+	}
+	cmd_inv(playerid, "");
 	return 1;
 }
 stock OnPlayerUseItem(playerid, itemid , slot) {
